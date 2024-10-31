@@ -5,6 +5,7 @@ import io
 import pickle
 from bktree import BKTree
 from helper import fuzzy_ratio_distance
+import sys
 
 
 def compute_tfidf(corpus, stop_words):
@@ -107,3 +108,12 @@ def main(text_path, index_output_path, stop_words_path=""):
             file.write(f'{w} {c}\n')
     
     print("Done")
+
+
+if __name__ == '__main__':
+    if len(sys.argv) == 4:
+        main(sys.argv[1], sys.argv[2], sys.argv[3])
+    elif len(sys.argv) == 3:
+        main(sys.argv[1], sys.argv[2])
+    else:
+        print('At least path to transcriptions and index dir must be provided')
