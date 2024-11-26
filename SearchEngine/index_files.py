@@ -1,11 +1,12 @@
+import sys
+import argparse
+import io
+import pickle
 from sklearn.feature_extraction.text import TfidfVectorizer
 from collections import defaultdict
 from pathlib import Path
-import io
-import pickle
 from bktree import BKTree
 from helper import fuzzy_ratio_distance
-import sys
 
 
 def compute_tfidf(corpus, stop_words):
@@ -82,28 +83,28 @@ def index_files(text_path, stop_words):
 
     return bktree, tfidf, feature_map, word_documents, word_counts
 
-def main(text_path, index_output_path, stop_words_path=""):
+def run_indexing(transcriptions_dir, index_output_dir, stop_words_path):
     if stop_words_path == "":
         stop_words = {}
     else:
         stop_words = { w : 0 for w in io.open(stop_words_path, mode='r', encoding="utf-8").read().split(',')}
     
-    bktree, tfidf, feature_map, word_documents, word_counts = index_files(text_path, stop_words)
+    bktree, tfidf, feature_map, word_documents, word_counts = index_files(transcriptions_dir, stop_words)
 
     print("Exporting indexes...")
 
-    bktree.save_to_file(f'{index_output_path}/bktree.json')
+    bktree.save_to_file(f'{index_output_dir}/bktree.json')
 
-    with open(f'{index_output_path}/tfidf.pickle', 'wb') as handle:
+    with open(f'{index_output_dir}/tfidf.pickle', 'wb') as handle:
         pickle.dump(tfidf, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open(f'{index_output_path}/feature_map.pickle', 'wb') as handle:
+    with open(f'{index_output_dir}/feature_map.pickle', 'wb') as handle:
         pickle.dump(feature_map, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open(f'{index_output_path}/word_documents.pickle', 'wb') as handle:
+    with open(f'{index_output_dir}/word_documents.pickle', 'wb') as handle:
         pickle.dump(word_documents, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open(f'{index_output_path}/word_counts.txt', 'w') as file:
+    with open(f'{index_output_dir}/word_counts.txt', 'w') as file:
         for w, c in word_counts.items():
             file.write(f'{w} {c}\n')
     
@@ -111,9 +112,11 @@ def main(text_path, index_output_path, stop_words_path=""):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 4:
-        main(sys.argv[1], sys.argv[2], sys.argv[3])
-    elif len(sys.argv) == 3:
-        main(sys.argv[1], sys.argv[2])
-    else:
-        print('At least path to transcriptions and index dir must be provided')
+    parser = argparse.ArgumentParser(description="Run bk-tree and SymSpell indexing on transcriptions.")
+    parser.add_argument("--transcriptions_dir", type=str, required=True, help="Path to the directory containing transcription to be indexed.")
+    parser.add_argument("--index_output_dir", type=str, required=True, help="Path to the directory to store indexes.")
+    parser.add_argument("--stop_words_path", type=str, default="", help="Path to stop words text file.")
+    
+    args = parser.parse_args()
+
+    run_indexing(args.transcriptions_dir, args.index_output_dir, args.stop_words_path)
