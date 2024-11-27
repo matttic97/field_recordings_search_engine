@@ -53,7 +53,7 @@ The project also includes automatic transcription indexing to structure the extr
 ### 1. Preprocessing
 Run source separation and ASR on a folder of audio recordings:
 ```bash
-python Preprocess/preprocess_pipeline.py --input_folder path/to/audio_dir --output_dir path/to/output_dir --text_output_dir path/to/text_output_dir
+python Preprocess/preprocess_pipeline.py --input_dir path/to/audio_dir --output_dir path/to/output_dir --text_output_dir path/to/text_output_dir
 ```
 This separates vocals from audio files and saves them to the specified output directory. Seperated vocal audio files are then run through ASR, transcriptions are saved to the specified text output directory.
 
@@ -68,6 +68,32 @@ python FuzzySearchEngine/index_files.py --transcriptions_dir path/to/transcripti
 Run fuzzy search cli:
 ```bash
 python FuzzySearchEngine/fuzzy_search_cli.py --index_dir path/to/index_output_dir --stop_words_path path/to/stop_words_text_file
+>search query:find-20:letalo
+Document ID: example_787_vocals.txt, Score: 0.06521739130434782
+Document ID: example_366_vocals.txt, Score: 0.006038647342995169
+Document ID: example_283_vocals.txt, Score: 0.003952569169960474
+Document ID: example_165_vocals.txt, Score: 0.003952569169960474
+Document ID: example_936_vocals.txt, Score: 0.003450655624568668
+Document ID: example_407_vocals.txt, Score: 0.003105590062111801
+Document ID: example_993_vocals.txt, Score: 0.0024154589371980675
+Document ID: example_95_vocals.txt, Score: 0.0024154589371980675
+Document ID: example_93_vocals.txt, Score: 0.0024154589371980675
+Document ID: example_873_vocals.txt, Score: 0.0024154589371980675
+Document ID: example_856_vocals.txt, Score: 0.0024154589371980675
+Document ID: example_751_vocals.txt, Score: 0.0024154589371980675
+Document ID: example_732_vocals.txt, Score: 0.0024154589371980675
+Document ID: example_68_vocals.txt, Score: 0.0024154589371980675
+Document ID: example_679_vocals.txt, Score: 0.0024154589371980675
+Document ID: example_603_vocals.txt, Score: 0.0024154589371980675
+Document ID: example_597_vocals.txt, Score: 0.0024154589371980675
+Document ID: example_550_vocals.txt, Score: 0.0024154589371980675
+Document ID: example_521_vocals.txt, Score: 0.0024154589371980675
+Document ID: example_494_vocals.txt, Score: 0.0024154589371980675
+>search query:find-3:Slavčkov, ki smo ti zlat ven zdobil, ne?
+Document ID: example_11_vocals.txt, Score: 0.22655945419103313
+Document ID: example_730_vocals.txt, Score: 0.21851851851851853
+Document ID: example_799_vocals.txt, Score: 0.21666666666666667
+>search query:exit()
 ```
 
 Fuzzy search can also be performed within Python:
@@ -75,7 +101,7 @@ Fuzzy search can also be performed within Python:
 from FuzzySearchEngine.fuzzy_search import FuzzySearch
 
 search_engine = FuzzySearch("path/to/index_output_dir", "path/to/stop_words_text_file")
-results = search_engine.find_relevant_documents("some search query")
+results = search_engine.find_relevant_documents("some search query", 20)
 ```
 
 ---

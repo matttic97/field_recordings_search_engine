@@ -2,3 +2,5 @@
 data
 output
 transcriptions
+index
+*__pycache__

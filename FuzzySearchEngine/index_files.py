@@ -1,4 +1,4 @@
-import sys
+import os
 import argparse
 import io
 import pickle
@@ -57,12 +57,12 @@ def index_files(text_path, stop_words):
     slovenian_alphabet = set("abcčćdđeéfghijklmnoópqrsštuvwxyzž ")
     word_documents = defaultdict(list)
     word_counts = defaultdict(int)
-    documents = [[]] * 1012
+    documents = []
 
     for transcription in Path(text_path).rglob('*.txt'):
         text = io.open(transcription, mode='r', encoding="utf-8").read().lower()
         words = ''.join([c for c in text if c in slovenian_alphabet]).split()
-        doc = int(str(transcription.name).split('_')[1]) - 1
+        doc = str(transcription.name)
 
         entity_counts = defaultdict(int)
         for word in words:
@@ -76,30 +76,33 @@ def index_files(text_path, stop_words):
             word_documents[word].append(doc)
             word_counts[word] += count
 
-        documents[doc] = " ".join([word for word in words if word not in stop_words])
+        # documents.append([" ".join([word for word in words if word not in stop_words])])
 
-    print('Computing TF-IDF...')
-    tfidf, feature_map = compute_tfidf(documents, list(stop_words.keys()))
+    # print('Computing TF-IDF...')
+    # tfidf, feature_map = compute_tfidf(documents, list(stop_words.keys()))
 
-    return bktree, tfidf, feature_map, word_documents, word_counts
+    return bktree, word_documents, word_counts #, tfidf, feature_map
 
 def run_indexing(transcriptions_dir, index_output_dir, stop_words_path):
+    # Ensure the output directory exists
+    os.makedirs(index_output_dir, exist_ok=True)
+
     if stop_words_path == "":
         stop_words = {}
     else:
         stop_words = { w : 0 for w in io.open(stop_words_path, mode='r', encoding="utf-8").read().split(',')}
     
-    bktree, tfidf, feature_map, word_documents, word_counts = index_files(transcriptions_dir, stop_words)
+    bktree, word_documents, word_counts = index_files(transcriptions_dir, stop_words)
 
     print("Exporting indexes...")
 
     bktree.save_to_file(f'{index_output_dir}/bktree.json')
 
-    with open(f'{index_output_dir}/tfidf.pickle', 'wb') as handle:
-        pickle.dump(tfidf, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    # with open(f'{index_output_dir}/tfidf.pickle', 'wb') as handle:
+    #     pickle.dump(tfidf, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open(f'{index_output_dir}/feature_map.pickle', 'wb') as handle:
-        pickle.dump(feature_map, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    # with open(f'{index_output_dir}/feature_map.pickle', 'wb') as handle:
+    #     pickle.dump(feature_map, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     with open(f'{index_output_dir}/word_documents.pickle', 'wb') as handle:
         pickle.dump(word_documents, handle, protocol=pickle.HIGHEST_PROTOCOL)

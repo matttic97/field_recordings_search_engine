@@ -62,7 +62,7 @@ class FuzzySearch:
         ----------
         document_scores : defaultdict
             Dictionary of document scores for ranking.
-        doc_id : int
+        doc_id : str
             Document ID to score.
         match_score : float
             Fuzzy match score for the document.
@@ -85,7 +85,7 @@ class FuzzySearch:
         ----------
         document_scores : defaultdict
             Dictionary of document scores for ranking.
-        doc_id : int
+        doc_id : str
             Document ID to score.
         match_score : float
             Fuzzy match score for the document.
@@ -107,7 +107,7 @@ class FuzzySearch:
         ----------
         document_scores : defaultdict
             Dictionary of document scores for ranking.
-        doc_id : int
+        doc_id : str
             Document ID to score.
         match_score : float
             Fuzzy match score for the document.
@@ -129,7 +129,7 @@ class FuzzySearch:
         ----------
         document_scores : defaultdict
             Dictionary of document scores for ranking.
-        doc_id : int
+        doc_id : str
             Document ID to score.
         match_score : float
             Fuzzy match score for the document.
@@ -162,10 +162,10 @@ class FuzzySearch:
         )
 
         # Load serialized index data
-        with open(f'{index_dir}/tfidf.pickle', 'rb') as handle:
-            self.tfidf = pickle.load(handle)
-        with open(f'{index_dir}/feature_map.pickle', 'rb') as handle:
-            self.feature_map = pickle.load(handle)
+        # with open(f'{index_dir}/tfidf.pickle', 'rb') as handle:
+        #     self.tfidf = pickle.load(handle)
+        # with open(f'{index_dir}/feature_map.pickle', 'rb') as handle:
+        #     self.feature_map = pickle.load(handle)
         with open(f'{index_dir}/word_documents.pickle', 'rb') as handle:
             self.word_documents = pickle.load(handle)
 
@@ -210,10 +210,10 @@ class FuzzySearch:
             prev_docs = defaultdict(int)
             for distance, match in matches:
                 match_score = 1 / (distance + 1)
-                if match not in self.feature_map:
+                if match not in self.word_documents: #self.feature_map:
                     continue
                 for doc_id in self.word_documents[match]:
-                    score_func(document_scores, doc_id, match_score, L * len(matches), prev_docs, self.tfidf[doc_id][self.feature_map[match]])
+                    score_func(document_scores, doc_id, match_score, L * len(matches), prev_docs, None) #, self.tfidf[doc_id][self.feature_map[match]])
 
         return heapq.nlargest(k, document_scores.items(), key=_getitem1_0)
 
@@ -253,11 +253,11 @@ class FuzzySearch:
             for distance, match in matches:
                 match_score = 1 / (distance + 1)
                 for doc_id in self.word_documents[match]:
-                    score_func(document_scores, doc_id, match_score, L * len(matches), prev_docs)
+                    score_func(document_scores, doc_id, match_score, L * len(matches), prev_docs, None)
 
         return heapq.nlargest(k, document_scores.items(), key=_getitem1_0)
 
-    def find_relevant_documents(self, query, k=20, score_func=score_match_query_ratio_with_penalty, n=-1):
+    def find_relevant_documents(self, query, k=20, score_func=None, n=-1):
         """
         Finds relevant documents based on a query.
 
@@ -278,6 +278,9 @@ class FuzzySearch:
         list
             Top-k documents ranked by relevance.
         """
+
+        if score_func == None:
+            score_func = self.score_match_query_ratio_with_penalty
 
         # Preprocess query: remove stop words and get unique words
         words = _npUnique([word for word in query.split() if word not in self.stop_words])
