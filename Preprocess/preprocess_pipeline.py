@@ -23,6 +23,7 @@ def run_source_separation(input_dir, output_dir):
         "python", "SourceSeparation/inference.py",  # Ensure inference.py is in the same directory or accessible
         "--input_folder", input_dir,
         "--store_dir", output_dir,
+        "--extract_instrumental", False,
     ]
 
     try:

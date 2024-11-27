@@ -27,7 +27,7 @@ training:
   grad_clip: 0
   instruments:
   - vocals
-  - other
+  # - other
   lr: 9.0e-05
   patience: 2
   reduce_factor: 0.95
@@ -79,16 +79,16 @@ augmentations:
     tanh_distortion: 0.1
     tanh_distortion_min: 0.1
     tanh_distortion_max: 0.7
-  other:
-    pitch_shift: 0.1
-    pitch_shift_min_semitones: -4
-    pitch_shift_max_semitones: 4
-    gaussian_noise: 0.1
-    gaussian_noise_min_amplitude: 0.001
-    gaussian_noise_max_amplitude: 0.015
-    time_stretch: 0.01
-    time_stretch_min_rate: 0.8
-    time_stretch_max_rate: 1.25
+  # other:
+  #   pitch_shift: 0.1
+  #   pitch_shift_min_semitones: -4
+  #   pitch_shift_max_semitones: 4
+  #   gaussian_noise: 0.1
+  #   gaussian_noise_min_amplitude: 0.001
+  #   gaussian_noise_max_amplitude: 0.015
+  #   time_stretch: 0.01
+  #   time_stretch_min_rate: 0.8
+  #   time_stretch_max_rate: 1.25
 
 inference:
   batch_size: 1

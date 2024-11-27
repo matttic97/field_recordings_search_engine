@@ -72,7 +72,7 @@ python FuzzySearchEngine/fuzzy_search_cli.py --index_dir path/to/index_output_di
 
 Fuzzy search can also be performed within Python:
 ```python
-import FuzzySearchEngine.fuzzy_search
+from FuzzySearchEngine.fuzzy_search import FuzzySearch
 
 search_engine = FuzzySearch("path/to/index_output_dir", "path/to/stop_words_text_file")
 results = search_engine.find_relevant_documents("some search query")
@@ -83,6 +83,7 @@ results = search_engine.find_relevant_documents("some search query")
 ## Acknowledgments
 - [ZFTurbo](https://github.com/ZFTurbo/Music-Source-Separation-Training) for the MDX model used for source separation.
 - [OpenAI](https://github.com/openai/whisper) for the Whisper ASR model.
+- [benhoyt](https://github.com/benhoyt/pybktree) for the base of our BK-tree implementation.
 - All contributors to open-source tools and libraries used in this project. 
 
 ---
