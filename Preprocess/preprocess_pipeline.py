@@ -1,6 +1,7 @@
 import os
 import subprocess
 import argparse
+import whisper
 
 
 def run_source_separation(input_dir, output_dir):
@@ -20,22 +21,26 @@ def run_source_separation(input_dir, output_dir):
 
     # Construct the command for ZFTurbo's inference.py
     command = [
-        "python", "SourceSeparation/inference.py",  # Ensure inference.py is in the same directory or accessible
+        "python", "Preprocess/SourceSeparation/inference.py",  # Ensure inference.py is in the same directory or accessible
         "--input_folder", input_dir,
         "--store_dir", output_dir,
-        "--extract_instrumental", False,
+        "--config_path", "Preprocess/SourceSeparation/configs/config_vocals_mdx23c.yaml"
     ]
 
     try:
         # Run the inference.py command
         subprocess.run(command, check=True)
         print(f"Separation completed")
+        return True
+    
     except subprocess.CalledProcessError as e:
         print("An error occurred while processing")
     except FileNotFoundError:
         print("inference.py not found or not accessible. Ensure it's set up correctly.")
 
-def run_asr(input_dir, output_dir, language="sl", model="turbo", file_extensions=("wav", "mp3", "flac")):
+    return False
+
+def run_asr(input_dir, output_dir, language="sl", model_version="turbo", file_extensions=("wav", "mp3", "flac")):
     """
     Runs the Whisper CLI on all audio files in a directory.
 
@@ -61,29 +66,31 @@ def run_asr(input_dir, output_dir, language="sl", model="turbo", file_extensions
     if not audio_files:
         print(f"No audio files with extensions {file_extensions} found in {input_dir}.")
         return
+    
+    # Load the Whisper model
+    model = whisper.load_model(model_version)
 
     # Process each audio file
     for audio_file in audio_files:
         input_audio_path = os.path.join(input_dir, audio_file)
         print(f"Processing file: {input_audio_path}")
 
-        # Construct the Whisper CLI command
-        command = [
-            "whisper", input_audio_path,
-            "--output_dir", output_dir,
-            "--language", language,
-            "--model", model
-        ]
-
         try:
-            # Run the Whisper CLI command
-            subprocess.run(command, check=True)
-            print(f"Transcription completed for: {audio_file}")
-        except subprocess.CalledProcessError as e:
+            # Transcribe the audio file
+            result = model.transcribe(input_audio_path, language=language)
+
+            # Extract text
+            transcription_text = result["text"]
+            
+            # Save the transcription to a text file
+            output_text_path = os.path.join(output_dir, os.path.splitext(audio_file)[0] + '.txt')
+            with open(output_text_path, "w", encoding="utf-8") as file:
+                file.write(transcription_text)
+
+            print(f"Transcription saved to {output_text_path}")
+        
+        except Exception as e:
             print(f"An error occurred while processing {audio_file}: {e}")
-        except FileNotFoundError:
-            print("Whisper CLI is not installed or not found in PATH. Please install it first.")
-            break
 
 
 if __name__ == "__main__":
@@ -97,7 +104,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Run source separation
-    run_source_separation(args.input_dir, args.output_dir)
-
-    # Run speech recognition
-    run_asr(args.output_dir, args.text_output_dir, args.language, args.model)
+    isSuccess = run_source_separation(args.input_dir, args.output_dir)
+    if isSuccess:
+        # Run speech recognition
+        run_asr(args.output_dir, args.text_output_dir, args.language, args.model)
